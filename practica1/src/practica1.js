@@ -32,14 +32,17 @@ MemoryGame = function(gs) {
 
 	// Draws the game
 	this.draw = function() {
-		gs._proto_.drawMessage(this.message);
-		for (int a = 0; a < 8; a++) {
-			gs._proto_.draw(MemoryGame[a]);
+		this.gs.drawMessage(this.message);
+
+		for(i in this.cards) {
+			this.cards[i].draw(gs, i);
 		}
 	 };
 
 	// Game loop
-	this.loop = function() { };
+	this.loop = function() {
+		this.draw();
+	};
 
 	// Triggered whenever the user clicks on any of the cards
 	// Flips the cards. If two cards are flipped, checks if they are the same
