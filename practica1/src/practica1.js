@@ -11,10 +11,11 @@ var MemoryGame = MemoryGame || {};
   */
 MemoryGame = function(gs) {
 	this.gs = gs;
-	this.cards =[];
-	this.state = "none";
-	this.message = "Pick first card.";
+	this.cards = [];
+	this.backs = [];
+	this.state = "noneFlipped";
 	this.cardsFound = 0;
+	this.otherCard;
 
 	// Initializes the game creating the cards, shuffling them and starting the game loop
 	this.initGame = function() {
@@ -23,6 +24,7 @@ MemoryGame = function(gs) {
 		for (let i = 0; i < 8; i++) {
 			for (let j = 0; j < 2; j++) {
 				this.cards.push(new MemoryGameCard(types[i]));
+				this.backs.push(new MemoryGameCard(types[8]));
 			}
 		}
 
@@ -32,21 +34,56 @@ MemoryGame = function(gs) {
 
 	// Draws the game
 	this.draw = function() {
-		this.gs.drawMessage(this.message);
+		if (this.state == "noneFlipped") {
+			if (this.cardsFound == 16) this.gs.drawMessage("You won!");
+			else this.gs.drawMessage("Pick first card.");
+		}
 
-		for(i in this.cards) {
-			this.cards[i].draw(gs, i);
+		else if (this.state == "oneFlipped") this.gs.drawMessage("Pick second card.");
+
+		for (i in this.cards) {
+			if (this.cards[i].state == "flipped" || this.cards[i].state == "found") {
+				this.cards[i].draw(gs, i);
+			}
+
+			else this.backs[i].draw(gs, i);
 		}
 	 };
 
 	// Game loop
+	// TODO: Does not finish
 	this.loop = function() {
-		this.draw();
+		setInterval(this.draw.bind(this), 16);
 	};
 
 	// Triggered whenever the user clicks on any of the cards
 	// Flips the cards. If two cards are flipped, checks if they are the same
-	this.onClick = function(cardID) { };
+	// TODO: Can't choose same card twice
+	this.onClick = function(cardID) {
+		if (this.state == "noneFlipped") {
+			this.cards[cardID].flip();
+			this.otherCard = this.cards[cardID];
+			this.state = "oneFlipped";
+		}
+
+		else if (this.state == "oneFlipped") {
+			this.cards[cardID].flip();
+
+			if (this.cards[cardID].compareTo(this.otherCard)) {
+				this.cards[cardID].found();
+				this.otherCard.found();
+				this.cardsFound = this.cardsFound + 2;
+				this.state = "noneFlipped";
+			}
+			else {
+				setTimeout(function() {
+					this.cards[cardID].state = "notFlipped";
+					this.otherCard.state = "notFlipped";
+				}, 1000);
+				this.state = "noneFlipped";
+			}
+		}
+	};
 };
 
 /**
@@ -58,15 +95,32 @@ MemoryGame = function(gs) {
 
 MemoryGameCard = function(id) {
 	this.id = id;
+	this.state = "notFlipped";
 
 	// Flips the card, changing its status
-	this.flip = function() { };
+	this.flip = function() {
+		if (this.state == "notFlipped") {
+			this.state = "flipped";
+		}
+	};
 
 	// Marks a card as found, changing its status
-	this.found = function() { };
+	this.found = function() {
+		this.state = "found";
+	};
 
 	// Compares two cards, returning true if both represent the same card
-	this.compareTo = function(otherCard) { };
+	this.compareTo = function(otherCard) { 
+		if (this.id == otherCard.id) {
+			this.found();
+			otherCard.found();
+		}
+		return true;
+	};
+
+	this.draw = function(gs, pos) {
+		gs.draw(this.id, pos);
+	};
 };
 
 function shuffle(a) {
