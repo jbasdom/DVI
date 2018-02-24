@@ -82,9 +82,11 @@ MemoryGame = function(gs) {
 
 				//...if they are not the same, they are flipped back
 				else {
-					this.cards[cardID].state = "notFlipped";
-					this.otherCard.state = "notFlipped";
-					this.state = "noneFlipped";
+					setTimeout(function() {
+						this.cards[cardID].state = "notFlipped";
+						this.otherCard.state = "notFlipped";
+						this.state = "noneFlipped";
+					}, 1000);
 				}
 			}
 		}
