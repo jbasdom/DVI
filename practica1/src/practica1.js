@@ -38,6 +38,8 @@ MemoryGame = function(gs) {
 
 		else if (this.state === "oneFlipped") this.gs.drawMessage("Pick second card.");
 
+		else if (this.state === "wait") this.gs.drawMessage("Wrong card.");
+
 		else if (this.state === "finished") this.gs.drawMessage("You won!");
 
 		for (i in this.cards) {
